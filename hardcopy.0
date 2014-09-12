@@ -1,0 +1,28 @@
+ 91 //Keyframe Window Display Function
+ 92 void G308_Frame(){
+ 93     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+ 94     glEnable(GL_DEPTH_TEST);
+ 95     glEnable(GL_LIGHTING);
+ 96     glEnable(GL_COLOR_MATERIAL);
+ 97     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+ 98     glShadeModel(GL_SMOOTH);
+ 99
+100     GLenum err = glGetError();
+101     if (err != GL_NO_ERROR){
+102         printf("%s\n", gluErrorString(err));
+103     }
+104
+105     glBegin(GL_LINES);
+106     cout << splinePoints.size() << endl;
+107     int i = 0;
+108     for (std::vector<G308_Point>::iterator i = splinePoints.begin(); i != splinePoints.end() -1; i++){
+109         glVertex3f(i->x, i->y, i->z);
+110         glVertex3f((i+1)->x, (i+1)->y, (i+1)->z);
+111     }
+112
+113     glDisable(GL_DEPTH_TEST);
+114     glDisable(GL_LIGHTING);
+115     glDisable(GL_COLOR_MATERIAL);
+116
+ NORMAL ::  1:main.cpp                                                                                                                                                                                 9 cpp 9 utf-8[unix] 9  41% : 109: 26
+1:main.cpp
