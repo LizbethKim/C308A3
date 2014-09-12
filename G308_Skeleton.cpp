@@ -20,12 +20,16 @@
 #include <GL/glut.h>
 #include "G308_Skeleton.h"
 #include "define.h"
+#include <iostream>
 
 Skeleton::Skeleton(char* filename) {
 	numBones = 1;
 	buffSize = 200;
 	maxBones = 60;
 	angle = 0;
+	currX = 0;
+	currY = 0;
+	currZ = 0;
 	root = (bone*) malloc(sizeof(bone) * maxBones);
 
 	for (int i = 0; i < 60; i++) {
@@ -81,7 +85,7 @@ void Skeleton::display() {
 	if (root == NULL) {
 		return;
 	}
-	glMatrixMode(GL_MODELVIEW);
+	// glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glScalef(0.05, 0.05, 0.05);
 
@@ -102,29 +106,26 @@ void Skeleton::display(bone* root, GLUquadric* q) {
 	if (root == NULL) {
 		return;
 	}
-	// Draw ground
-	// glColor3f(0.9f, 0.9f, 0.9f);
-	// glBegin(GL_QUADS);
-	// 	glVertex3f(-100.0f, -100.0f, 0);
-	// 	glVertex3f(-100.0f, 100.0f,  0);
-	// 	glVertex3f( 100.0f, 100.0f,  0);
-	// 	glVertex3f( 100.0f, -100.0f, 0);
-	// glEnd();
+	glPushMatrix();
+		glTranslatef(currX, currY, currZ);
+		cout << currX << " " << currY << " " << currZ << endl;
+		glColor3f(0.5f, 0, 0.5f);
+		glutSolidSphere(0.5, 100, 100);
+		glTranslatef(-currX, -currY, -currZ);
+		glutPostRedisplay();
+	glPopMatrix();
 
-// Draw 4 Snowmen
+}
 
-	// glColor3f(1.0f, 1.0f, 1.0f);
-
-	// for(int i = 0; i < 2; i++)
-	// 	for(int j = 0; j < 2; j++) {
-	// 		glPushMatrix();
-	// 		glTranslatef(i*3.0,-j * 3.0, 0);
-	// 		glColor3f(1.0f, 1.0f, 1.0f);
-	// 		glutSolidSphere(1, 100, 100);
-	// 		glPopMatrix();
-	// 	}
-	//YOUR CODE GOES HERE
-
+void Skeleton::animate(int x, int y, int z, int frame){
+	if (frame == 0){
+		currX = 0;
+		currY = 0;
+		currZ = 0;
+	}
+	currX = x;
+	currY = y;
+	currZ = z;
 }
 
 bool Skeleton::readASF(char* filename) {

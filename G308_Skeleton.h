@@ -53,7 +53,7 @@ void trim(char**);
 class Skeleton {
 
 private:
-	int buffSize, maxBones;
+	int buffSize, maxBones, currX, currY, currZ;
 	bone* root;
 	bool readASF(char*);
 	void readHeading(char*, FILE*);
@@ -71,6 +71,7 @@ public:
 	~Skeleton();
 	void display();
 	void readAMC(FILE*,int*);
+	void animate(int, int, int, int);
 };
 
 #endif

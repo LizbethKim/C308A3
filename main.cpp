@@ -40,12 +40,18 @@ void G308_MainFrame();
 void G308_SetLight();
 void drawPickingMode();
 int processPick(int, int);
+void G308_animate();
 void G308_frameMouseListener(int, int, int, int);
 
 Skeleton* skeleton;
 vector<G308_Point> splinePoints(0);
+vector<G308_Point> interpolate(0);
 int lastX = 0, lastY = 0, curX = 0, curY = 0, maxY = 0;
 int arcball = false;
+int addPoint = 0;
+int currFrame = 0;
+int animate = 0;
+
 
 int main(int argc, char** argv) {
 
@@ -62,9 +68,11 @@ int main(int argc, char** argv) {
 	g_mainWnd = glutCreateWindow("COMP308 Assignment 3");
 
 	glutKeyboardFunc(G308_keyboardListener);
+	glutMotionFunc(G308_motionListener);
 	glutMouseFunc(G308_mouseListener);
 	glutDisplayFunc(G308_display);
 	glutReshapeFunc(G308_Reshape);
+	glutIdleFunc(G308_animate);
 
 	G308_init();
 
@@ -117,10 +125,9 @@ void G308_Frame(){
     glEnd();
 
     glBegin(GL_LINE_STRIP);
-	    for(std::vector<G308_Point>::iterator i = splinePoints.begin(); i != splinePoints.end() && (i+1) != splinePoints.end(); i++)	//int i = 1; i < numPts-2; i++
-		{
-	        for(int k = 0;  k < 50; k++){    //50 points
-			   float t = k*0.02;  //Interpolation parameter
+	    for(std::vector<G308_Point>::iterator i = splinePoints.begin(); i != splinePoints.end() && (i+1) != splinePoints.end(); i++){
+	        for(int k = 0;  k < 50; k++){
+			   float t = k*0.02;  
                //--Eq. (7.34)--
                xcr = i->x + 0.5*t*(-(i-1)->x+(i+1)->x) 
                    + t*t*((i-1)->x - 2.5*i->x + 2*(i+1)->x - 0.5*(i+2)->x)
@@ -145,11 +152,20 @@ void G308_Frame(){
     //G308_display();
 }
 
+void G308_animate(){
+	if (interpolate.size() != 0 && animate == 1){
+		int startX = interpolate.at(0).x, startY = interpolate.at(0).y, startZ = interpolate.at(0).z;
+		cout << "Interpolate Size = " << interpolate.size() << " && current Frame = " << currFrame << endl;
+		skeleton->animate(interpolate.at(currFrame).x/100, (interpolate.at(currFrame).y)/100, interpolate.at(currFrame)./100, currFrame);
+		G308_MainFrame();
+		currFrame = (currFrame + 1)%interpolate.size();
+	}
+}
+
 void G308_MainFrame(){
 
     glBegin(GL_LINES);
-    float startx = 0, starty = 0, startz = 0;
-    float ddx = 0, ddy = 0, ddz = 0;
+    float startx = 0, starty = 0, startz = 0, xcr, ycr;
     for (std::vector<G308_Point>::iterator i = splinePoints.begin(); i != splinePoints.end(); i++){
     	if (i == splinePoints.begin()){
     		startx = i->x;
@@ -158,11 +174,51 @@ void G308_MainFrame(){
     	}
         glPushMatrix();
         glTranslatef(((i->x)-startx)/100, ((i->z)-startz)/100, ((i->y)-starty)/100);
-        cout << (i->x)-ddx-startx << " X | Y " << (i->z)-ddz-startz << " Z " << (i->y)-ddy-starty << endl;
+        glColor3f(1.0f, 1.0f, 1.0f);
         glutSolidSphere(0.05, 100, 100);
         glTranslatef(-((i->x)-startx)/100, -((i->z)-startz)/100, -((i->y)-starty)/100);
+        glPopMatrix();
     }
-    glEnd();
+
+    if (addPoint == 1){
+    	interpolate.clear();
+	    for(std::vector<G308_Point>::iterator i = splinePoints.begin(); i != splinePoints.end() && (i+1) != splinePoints.end(); i++){
+	        for(int k = 0;  k < 50; k++){
+			   float t = k*0.02;  
+	           //--Eq. (7.34)--
+	           xcr = i->x + 0.5*t*(-(i-1)->x+(i+1)->x) 
+	               + t*t*((i-1)->x - 2.5*i->x + 2*(i+1)->x - 0.5*(i+2)->x)
+	               + t*t*t*(-0.5*(i-1)->x + 1.5*i->x - 1.5*(i+1)->x + 0.5*(i+2)->x);
+	           ycr = i->y + 0.5*t*(-(i-1)->y+(i+1)->y) 
+	               + t*t*((i-1)->y - 2.5*i->y + 2*(i+1)->y - 0.5*(i+2)->y)
+	               + t*t*t*(-0.5*(i-1)->y + 1.5*i->y - 1.5*(i+1)->y + 0.5*(i+2)->y);
+	           glVertex2f(xcr, ycr);
+	           G308_Point temp;
+	           temp.x = xcr;
+	           temp.y = ycr;
+	           temp.z = i->z;
+
+	           interpolate.push_back(temp);
+		    }
+		}
+		addPoint = 0;
+	}
+
+	for (std::vector<G308_Point>::iterator i = interpolate.begin(); i != interpolate.end(); i++){
+		if (i == interpolate.begin()){
+			startx = i->x;
+			starty = i->y;
+			startz = i->z;
+		}
+		glPushMatrix();
+		glTranslatef(((i->x)-startx)/100, ((i->z)-startz)/100, ((i->y)-starty)/100);
+		glColor3f(1.0f, 1.0f, 1.0f);
+		glutSolidSphere(0.01, 100, 100);
+		glTranslatef(-((i->x)-startx)/100, -((i->z)-startz)/100, -((i->y)-starty)/100);
+		glPopMatrix();
+	}
+
+	// gluDeleteQuadric(q);
 
     if (skeleton != NULL) {
 		skeleton->display();
@@ -199,7 +255,10 @@ void G308_display() {
 }
 
 void G308_keyboardListener(unsigned char key, int x, int y) {
-	//Code to respond to key events
+	if (key == 'x'){
+		if (animate == 1) animate = 0;
+		else{animate = 1;}
+	}
 }
 
 void G308_mouseListener(int button, int state, int x, int y){
@@ -211,37 +270,37 @@ void G308_mouseListener(int button, int state, int x, int y){
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
 		// drawPickingMode();
 	// int check = processPick(x, y);
-	// if (!check){
-	// 	arcball = true;
-	// 	lastX = curX = x;
-	// 	lastY = curY = y;
-	// } else {
-	// arcball = false;
-	// }
+		cout << "Mouse Click" << endl;
+		arcball = true;
+		lastX = curX = x;
+		lastY = curY = y;
+	} else {
+		arcball = false;
 	}
 }
 
 void G308_motionListener(int x, int y){
-	// if (arcball){
-	// 	curX = x;
-	// 	curY = y;
-	// 	glRotatef((curX-lastX), 0, 1, 0);
-	// 	if (maxY > -180 && maxY < 180){
-	// 		glRotatef((curY-lastY), 1, 0, 0);
-	// 	}
+	if (arcball){
+		curX = x;
+		curY = y;
+		glRotatef((curX-lastX), 0, 1, 0);
+		if (maxY > -180 && maxY < 180){
+			glRotatef((curY-lastY), 1, 0, 0);
+		}
 
 
-	// 	if ((maxY + (curY-lastY)) < 200 && (maxY + (curY-lastY)) > (-200)){
-	// 		maxY += (curY-lastY);
-	// 	}
-	// 	lastY = curY;
-	// 	lastX = curX;
-	// 	glutPostRedisplay();
-	// }
+		if ((maxY + (curY-lastY)) < 200 && (maxY + (curY-lastY)) > (-200)){
+			maxY += (curY-lastY);
+		}
+		lastY = curY;
+		lastX = curX;
+		glutPostRedisplay();
+	}
 }
 
 void G308_frameMouseListener(int button, int state, int x, int y){
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+    	cout << "Meow" << endl;
         GLint viewport[4]; 
         GLdouble modelview[16]; 
         GLdouble projection[16]; 
@@ -266,6 +325,7 @@ void G308_frameMouseListener(int button, int state, int x, int y){
         splinePoints.push_back(temp);
         cout << x << " x | y " << y << endl;
         cout << splinePoints.size() << endl;
+        addPoint = 1;
         glutPostRedisplay();
     }
 }
