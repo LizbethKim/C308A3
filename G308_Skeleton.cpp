@@ -103,26 +103,26 @@ void Skeleton::display(bone* root, GLUquadric* q) {
 		return;
 	}
 	// Draw ground
-	glColor3f(0.9f, 0.9f, 0.9f);
-	glBegin(GL_QUADS);
-		glVertex3f(-100.0f, 0.0f, -100.0f);
-		glVertex3f(-100.0f, 0.0f,  100.0f);
-		glVertex3f( 100.0f, 0.0f,  100.0f);
-		glVertex3f( 100.0f, 0.0f, -100.0f);
-	glEnd();
+	// glColor3f(0.9f, 0.9f, 0.9f);
+	// glBegin(GL_QUADS);
+	// 	glVertex3f(-100.0f, -100.0f, 0);
+	// 	glVertex3f(-100.0f, 100.0f,  0);
+	// 	glVertex3f( 100.0f, 100.0f,  0);
+	// 	glVertex3f( 100.0f, -100.0f, 0);
+	// glEnd();
 
 // Draw 4 Snowmen
 
-	glColor3f(1.0f, 1.0f, 1.0f);
+	// glColor3f(1.0f, 1.0f, 1.0f);
 
-	for(int i = 0; i < 2; i++)
-		for(int j = 0; j < 2; j++) {
-			glPushMatrix();
-			glTranslatef(i*3.0,0,-j * 3.0);
-			glColor3f(1.0f, 1.0f, 1.0f);
-			glutSolidSphere(1, 100, 100);
-			glPopMatrix();
-		}
+	// for(int i = 0; i < 2; i++)
+	// 	for(int j = 0; j < 2; j++) {
+	// 		glPushMatrix();
+	// 		glTranslatef(i*3.0,-j * 3.0, 0);
+	// 		glColor3f(1.0f, 1.0f, 1.0f);
+	// 		glutSolidSphere(1, 100, 100);
+	// 		glPopMatrix();
+	// 	}
 	//YOUR CODE GOES HERE
 
 }

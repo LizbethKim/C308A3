@@ -142,26 +142,25 @@ void G308_Frame(){
     glDisable(GL_COLOR_MATERIAL);
 
     glutSwapBuffers();
+    //G308_display();
 }
 
 void G308_MainFrame(){
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-    glShadeModel(GL_SMOOTH);
-
-    GLenum err = glGetError();
-    if (err != GL_NO_ERROR){
-        printf("%s\n", gluErrorString(err));
-    }
 
     glBegin(GL_LINES);
-    for (std::vector<G308_Point>::iterator i = splinePoints.begin(); i != splinePoints.end() && (i+1) != splinePoints.end(); i++){
-        glVertex2f(i->x, i->y);
-        glVertex2f((i+1)->x, (i+1)->y);
-        cout << i->x << " X | Y " << i->z << " Z " << i->y << endl;
+    float startx = 0, starty = 0, startz = 0;
+    float ddx = 0, ddy = 0, ddz = 0;
+    for (std::vector<G308_Point>::iterator i = splinePoints.begin(); i != splinePoints.end(); i++){
+    	if (i == splinePoints.begin()){
+    		startx = i->x;
+    		starty = i->y;
+    		startz = i->z;
+    	}
+        glPushMatrix();
+        glTranslatef(((i->x)-startx)/100, ((i->z)-startz)/100, ((i->y)-starty)/100);
+        cout << (i->x)-ddx-startx << " X | Y " << (i->z)-ddz-startz << " Z " << (i->y)-ddy-starty << endl;
+        glutSolidSphere(0.05, 100, 100);
+        glTranslatef(-((i->x)-startx)/100, -((i->z)-startz)/100, -((i->y)-starty)/100);
     }
     glEnd();
 
@@ -169,9 +168,6 @@ void G308_MainFrame(){
 		skeleton->display();
 	}
 
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_LIGHTING);
-    glDisable(GL_COLOR_MATERIAL);
 }
 
 // Display call back
@@ -213,36 +209,35 @@ void G308_mouseListener(int button, int state, int x, int y){
 	//3 = MouseUp GLUT_SOMETHING
 	//4 = MouseDown GLUT_SOMETHINGELSE
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-        cout << x << " x|y " << y << endl;
-		drawPickingMode();
-		int check = processPick(x, y);
-		if (!check){
-			arcball = true;
-			lastX = curX = x;
-			lastY = curY = y;
-		} else {
-		arcball = false;
-		}
+		// drawPickingMode();
+	// int check = processPick(x, y);
+	// if (!check){
+	// 	arcball = true;
+	// 	lastX = curX = x;
+	// 	lastY = curY = y;
+	// } else {
+	// arcball = false;
+	// }
 	}
 }
 
 void G308_motionListener(int x, int y){
-	if (arcball){
-		curX = x;
-		curY = y;
-		glRotatef((curX-lastX), 0, 1, 0);
-		if (maxY > -180 && maxY < 180){
-			glRotatef((curY-lastY), 1, 0, 0);
-		}
+	// if (arcball){
+	// 	curX = x;
+	// 	curY = y;
+	// 	glRotatef((curX-lastX), 0, 1, 0);
+	// 	if (maxY > -180 && maxY < 180){
+	// 		glRotatef((curY-lastY), 1, 0, 0);
+	// 	}
 
 
-		if ((maxY + (curY-lastY)) < 200 && (maxY + (curY-lastY)) > (-200)){
-			maxY += (curY-lastY);
-		}
-		lastY = curY;
-		lastX = curX;
-		glutPostRedisplay();
-	}
+	// 	if ((maxY + (curY-lastY)) < 200 && (maxY + (curY-lastY)) > (-200)){
+	// 		maxY += (curY-lastY);
+	// 	}
+	// 	lastY = curY;
+	// 	lastX = curX;
+	// 	glutPostRedisplay();
+	// }
 }
 
 void G308_frameMouseListener(int button, int state, int x, int y){
